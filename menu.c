@@ -79,6 +79,8 @@ void display_score();
 void add_black_gold();
 void add_food(int row, int col, char** place, int display, int* flag, int index);
 void display_status();
+void game_over();
+void victory();
 
 int main()
 {
@@ -110,7 +112,8 @@ void handle_menu() {
     init_pair(6, COLOR_YELLOW, COLOR_BLACK); // rank1
     init_pair(7, COLOR_MAGENTA, COLOR_BLACK); // rank2
     init_pair(8, COLOR_CYAN, COLOR_BLACK); // rank3
-    
+    init_color(10, 1000, 467, 718);
+    init_pair(9, 10, COLOR_BLACK);
 
     while (1) {
         clear();
@@ -676,11 +679,11 @@ int room66_displayed = 0;
 int gold_displayed[6] = {0, 0, 0, 0, 0, 0}; 
 int black_gold_displayed[6] = {0, 0, 0, 0, 0, 0};
 
-int gold_displayed2[6] = {0, 0, 0, 0, 0, 0}; 
+int gold_displayed2[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
 int black_gold_displayed2[6] = {0, 0, 0, 0, 0, 0};
 
 int food_displayed[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-int food_displayed2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+int food_displayed2[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 int player_score = 0;
 
@@ -691,7 +694,7 @@ int player_hunger = 0;
 int hunger_max = 10;
 int hunger_max_moves = 10;
 int hunger_moves_counter = 0;
-
+int health_moves_counter = 0;
 
 
 char** create_place(int rows, int cols) {
@@ -932,6 +935,8 @@ void handle_character_movement_game1(int* player_row, int* player_col, char** pl
         }
 
         hunger_moves_counter++;
+        health_moves_counter++;
+
         if (hunger_moves_counter >= hunger_max_moves) {
             hunger_moves_counter = 0;
             if (player_hunger < hunger_max) {
@@ -941,6 +946,17 @@ void handle_character_movement_game1(int* player_row, int* player_col, char** pl
                 player_health -= 5;
                 display_status();
             }
+        }
+
+        if (player_hunger == 0 && health_moves_counter >= 5)
+        {
+            player_health += 5;
+            health_moves_counter = 0;
+            display_status();
+        }
+
+        if (player_health <= 0) {
+            game_over();
         }
 
         if (place[new_row][new_col] == '.' || place[new_row][new_col] == '+' || place[new_row][new_col] == '#' || 
@@ -1048,6 +1064,8 @@ void handle_character_movement_game2(int* player_row, int* player_col, char** pl
                 room11_displayed = 1;
                 handle_screen_game2(player_row, player_col);
             }
+            
+            
             if (*player_row == 18 && *player_col == 72) {
                 message_displayed44 = 1;
                 room55_displayed = 1;
@@ -1065,6 +1083,13 @@ void handle_character_movement_game2(int* player_row, int* player_col, char** pl
             }
         }
 
+        if (*player_row == 23 && *player_col == 23) {
+                mvprintw(0, 20, "You entered the treasure room!");
+                refresh();
+                napms(2000);
+                victory();
+            }
+
         if (*player_row == 24 && *player_col == 52 && !trap_activated2) {
             mvprintw(0, 20, "You hit a trap!");
             refresh();
@@ -1081,7 +1106,9 @@ void handle_character_movement_game2(int* player_row, int* player_col, char** pl
 
         if (ch == 'e' && player_food > 0) {
         player_food -= 1;
-        player_health += 5;
+        player_health += 15;
+        player_hunger = 0;
+        hunger_moves_counter = 0;
         display_status();
         }
 
@@ -1121,6 +1148,31 @@ void handle_character_movement_game2(int* player_row, int* player_col, char** pl
                 new_row++;
                 new_col++;
                 break;
+        }
+
+        hunger_moves_counter++;
+        health_moves_counter++;
+
+        if (hunger_moves_counter >= hunger_max_moves) {
+            hunger_moves_counter = 0;
+            if (player_hunger < hunger_max) {
+                player_hunger++;
+                display_status();
+            } else if (player_hunger == hunger_max) {
+                player_health -= 5;
+                display_status();
+            }
+        }
+
+        if (player_hunger == 0 && health_moves_counter >= 5)
+        {
+            player_health += 5;
+            health_moves_counter = 0;
+            display_status();
+        }
+
+        if (player_health <= 0) {
+            game_over();
         }
 
         if (place[new_row][new_col] == '.' || place[new_row][new_col] == '+' || place[new_row][new_col] == '#' ||
@@ -1399,8 +1451,32 @@ void handle_screen_game2(int *player_row, int *player_col) {
     add_gold(34, 35, place2, room22_displayed, gold_displayed2, 2);
     add_gold(15, 21, place2, room11_displayed, gold_displayed2, 3);
     add_gold(13, 70, place2, room55_displayed, gold_displayed2, 4);
-
+    add_gold(15, 22, place2, room11_displayed, gold_displayed2, 5);
+    add_gold(15, 23, place2, room11_displayed, gold_displayed2, 6);
+    add_gold(15, 24, place2, room11_displayed, gold_displayed2, 7);
+    add_gold(16, 21, place2, room11_displayed, gold_displayed2, 8);
+    add_gold(16, 22, place2, room11_displayed, gold_displayed2, 9);
+    add_gold(16, 23, place2, room11_displayed, gold_displayed2, 10);
+    add_gold(16, 24, place2, room11_displayed, gold_displayed2, 11);
+    add_gold(17, 21, place2, room11_displayed, gold_displayed2, 12);
+    add_gold(17, 22, place2, room11_displayed, gold_displayed2, 13);
+    add_gold(17, 23, place2, room11_displayed, gold_displayed2, 14);
+    add_gold(17, 24, place2, room11_displayed, gold_displayed2, 15);
     add_black_gold(26, 84, place2, room66_displayed, black_gold_displayed2, 0);
+    add_black_gold(18, 21, place2, room11_displayed, black_gold_displayed2, 1);
+    add_black_gold(18, 22, place2, room11_displayed, black_gold_displayed2, 2);
+    add_black_gold(18, 24, place2, room11_displayed, black_gold_displayed2, 3);
+
+    
+
+    add_food(23, 51, place2, room44_displayed, food_displayed2, 0);
+    add_food(21, 54, place2, room44_displayed, food_displayed2, 1);
+    add_food(30, 47, place2, room33_displayed, food_displayed2, 2);
+    add_food(29, 51, place2, room33_displayed, food_displayed2, 3);
+    add_food(25, 82, place2, room66_displayed, food_displayed2, 4);
+    add_food(27, 82, place2, room66_displayed, food_displayed2, 5);
+    add_food(16, 69, place2, room55_displayed, food_displayed2, 6);
+    add_food(13, 72, place2, room55_displayed, food_displayed2, 7);
 
     
     if(!welcome_displayed2){
@@ -1448,9 +1524,9 @@ void add_black_gold(int row, int col, char** place, int display, int* flag, int 
 
 void add_food(int row, int col, char** place, int display, int* flag, int index) {
     if (display && !flag[index]) {
-        //attron(COLOR_PAIR(9));
+        attron(COLOR_PAIR(9));
         mvprintw(row, col, "@");
-        //attroff(COLOR_PAIR(9));
+        attroff(COLOR_PAIR(9));
         place[row][col] = '@';
         flag[index] = 1;
     }
@@ -1458,18 +1534,59 @@ void add_food(int row, int col, char** place, int display, int* flag, int index)
 
 void display_status() {
     
+    mvprintw(0, COLS - 30, "                     ");
+    mvprintw(1, COLS - 30, "                     ");
+    mvprintw(2, COLS - 30, "                     ");
+    mvprintw(3, COLS - 30, "                     ");
+    mvprintw(4, COLS - 30, "                     ");
+
+    mvprintw(0, COLS - 30, "Player Score: %d", player_score);
     mvprintw(1, COLS - 30, "Player Health: %d", player_health);
     mvprintw(2, COLS - 30, "Food: %d", player_food);
     mvprintw(3, COLS - 30, "Hunger: %d", player_hunger);
     mvprintw(4, COLS - 30, "Hunger Bar: ");
-
+    
     for (int i = 0; i < hunger_max; i++) {
         mvprintw(4, COLS - 18 + i, " ");
     }
-
+    
     for (int i = 0; i < player_hunger; i++) {
         mvprintw(4, COLS - 18 + i, "|");
     }
     
+    refresh();
 }
+
+void game_over() {
+    clear();
+    attron(A_BOLD);
+    mvprintw(LINES / 2 - 2, COLS / 2 - 16, "You finished the game with a score of %d", player_score);
+    refresh();
+    napms(3000);
+    mvprintw(LINES / 2 - 1, COLS / 2 - 8, "Your health is over");
+    refresh();
+    napms(3000);
+    mvprintw(LINES / 2, COLS / 2 - 7, "You lost the game");
+    refresh();
+    napms(3000);
+    endwin();
+    exit(0);
+}
+
+void victory() {
+    clear();
+    attron(A_BOLD);
+    mvprintw(LINES / 2 - 10, COLS / 2 - 16, "Congratulations, you have won the game!");
+    refresh();
+    napms(2000);
+    mvprintw(LINES / 2 - 7, COLS / 2 - 7, "Your score is %d", player_score);
+    refresh();
+    napms(3000);
+    mvprintw(LINES / 2 - 4, COLS / 2 - 5, "Well done!");
+    refresh();
+    napms(3000);
+    endwin();
+    exit(0);
+}
+
 
