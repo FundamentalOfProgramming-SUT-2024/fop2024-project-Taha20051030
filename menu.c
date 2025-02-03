@@ -1227,7 +1227,7 @@ void handle_character_movement_game2(int* player_row, int* player_col, char** pl
             }
             refresh();
             napms(2000);
-            mvprintw(0, 20, "                                              ");
+            mvprintw(0, 20, "                                                  ");
             refresh();
             }
 
